@@ -55,6 +55,13 @@ export async function loginUser(req, res) {
     try {
         const { username, email, password } = req.body;
 
+        if ((!username && !email) || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "All fields are required"
+            })
+        }
+
         const user = await userModel.findOne({
             $or: [
                 { username },
@@ -64,7 +71,7 @@ export async function loginUser(req, res) {
         if (!user) {
             return res.status(401).json({
                 success: false,
-                message: "user not registered"
+                message: "Invalid username/email"
             })
         }
         const isPasswordCorrect = await user.comparePassword(password);
@@ -103,6 +110,37 @@ export async function loginUser(req, res) {
         return res.status(500).json({
             success: false,
             message: "Internal Server Error"
+        })
+    }
+
+}
+
+export async function getMe(req, res) {
+    try {
+
+        const user = await userModel.findById(req.user.id).select('-password');
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                messsage: "User not found"
+            })
+        }
+        return res.status(200).json({
+            success: true,
+            message: "User fetched Successfully",
+            user: {
+                username: user.username,
+                role: user.role,
+                email: user.email
+            }
+        })
+    }
+    catch (error) {
+        console.error("Internal Server error");
+        return res.status(500).json({
+            success: false,
+            message: "internal server error"
         })
     }
 
