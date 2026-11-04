@@ -4,7 +4,9 @@ const userSchema = new mongoose.Schema({
     username: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        minlength: 3,
+        unique:true
     },
     email: {
         type: String,
@@ -16,7 +18,8 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        minlength: 6
     },
     role: {
         type: String,
@@ -25,6 +28,19 @@ const userSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
+userSchema.pre("save", async function () {
+
+    if (!this.isModified("password")) {
+        return;
+    }
+    this.password = await bcrypt.hash(this.password, 10)
+
+});
+
+userSchema.methods.comparePassword = async function (enteredPassword) {
+    return await bcrypt.compare(enteredPassword, this.password)
+
+}
 const userModel = mongoose.model("user", userSchema);
 
 export default userModel;
