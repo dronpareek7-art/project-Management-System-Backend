@@ -130,6 +130,7 @@ export async function getMe(req, res) {
             success: true,
             message: "User fetched Successfully",
             user: {
+                id: user._id,
                 username: user.username,
                 role: user.role,
                 email: user.email
@@ -141,6 +142,28 @@ export async function getMe(req, res) {
         return res.status(500).json({
             success: false,
             message: "internal server error"
+        })
+    }
+
+}
+
+export async function logoutUser(req, res) {
+    try {
+
+        res.clearCookie("token", {
+            httpOnly: true,
+            secure: process.env.NODE_ENV = "production",
+            sameSite: "strict"
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "User log Out successfully"
+        })
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
         })
     }
 

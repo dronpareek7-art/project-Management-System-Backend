@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-export async function verifyToken(req, res) {
+export async function verifyToken(req, res, next) {
     try {
         const token = req.cookies?.token;
 
@@ -20,7 +20,7 @@ export async function verifyToken(req, res) {
         console.error("Token not verify");
         return res.status(500).json({
             success: false,
-            messsage: "Unauthorized Invalid/Expired token "
+            message: "Unauthorized Invalid/Expired token "
         })
     }
 
