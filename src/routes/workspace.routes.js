@@ -9,5 +9,6 @@ const workspaceRouter = express.Router();
 
 workspaceRouter.post("/workspaces", verifyToken, workspaceValidationRules, validateFields, createWorkspace)
 workspaceRouter.get("/workspaces", verifyToken, getAllWorkspaces)
+workspaceRouter.get("/workspaces/:workspaceId", verifyToken, )
 
 export default workspaceRouter;

@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import WorkSpaceModel from "../models/workspace.model.js";
 import WorkSpaceMemberModel from "../models/workspaceMember.model.js";
 
@@ -54,11 +55,11 @@ export async function getAllWorkspaces(req, res) {
         const memberships = await WorkSpaceMemberModel.find({
             userId
         })
-        .populate({
-            path: "workspaceId",
-            select: "title description owner slug createdAt updatedAt"
-        })
-        .sort({ joinedAt: -1 });
+            .populate({
+                path: "workspaceId",
+                select: "title description owner slug createdAt updatedAt"
+            })
+            .sort({ joinedAt: -1 });
 
         // Prepare workspace response
         const workspaces = memberships
@@ -85,4 +86,55 @@ export async function getAllWorkspaces(req, res) {
             message: "Internal Server Error"
         });
     }
+}
+
+export async function getWorkspaceDetails(req, res) {
+    
+    try {
+        const { workspaceId } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(workspaceId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid Workspace Id"
+            })
+        };
+
+        const workspace = await WorkSpaceModel.find(workspaceId);
+
+        if (!workspace) {
+            return res.status(404).json({
+                success: false,
+                message: "Workspace not found"
+            })
+        }
+        const membership = await WorkSpaceMemberModel.findOne({
+            workspaceId,
+            userId: req.user.id
+        });
+        if (!membership) {
+            return res.status(403).json({
+                success: false,
+                message: "you are not a longer user of this workspace"
+            })
+        };
+
+        return res.status(200).json({
+            success: true,
+            message: "Workspace details fetched successfully",
+            workspace: {
+                ...workspace.toObject(),
+                role: membership.role,
+                joinedAt: membership.joinedAt
+            }
+        });
+    }
+    catch (error) {
+        console.error("Workspace details error:", error.message);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        })
+    }
+
 }
