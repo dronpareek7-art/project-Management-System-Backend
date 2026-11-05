@@ -89,7 +89,7 @@ export async function getAllWorkspaces(req, res) {
 }
 
 export async function getWorkspaceDetails(req, res) {
-    
+
     try {
         const { workspaceId } = req.params;
 
@@ -100,7 +100,7 @@ export async function getWorkspaceDetails(req, res) {
             })
         };
 
-        const workspace = await WorkSpaceModel.find(workspaceId);
+        const workspace = await WorkSpaceModel.findById(workspaceId);
 
         if (!workspace) {
             return res.status(404).json({
@@ -134,6 +134,85 @@ export async function getWorkspaceDetails(req, res) {
         return res.status(500).json({
             success: false,
             message: "Internal server error"
+        })
+    }
+
+}
+
+export async function updateWorkspace(req, res) {
+    try {
+        const { workspaceId } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(workspaceId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid Workspace id"
+            })
+        }
+        const workspace = await WorkSpaceModel.findById(workspaceId);
+
+        if (!workspace) {
+            return res.status(404).json({
+                success: false,
+                message: "Workspace not found"
+            });
+        };
+
+        const membership = await WorkSpaceMemberModel.findOne({
+            workspaceId,
+            userId: req.user.id
+        });
+        if (!membership) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not a member of this workspace"
+            })
+        }
+        if (membership.role !== "admin") {
+            return res.status(403).json({
+                success: false,
+                message: "Only admin can edit the workspace"
+            })
+        }
+        const { title, description } = req.body;
+        if (title === undefined && description === undefined) {
+            return res.status(400).json({
+                success: false,
+                message: "At list one field is required for update"
+            })
+        }
+        if (title !== undefined) {
+            workspace.title = title;
+        };
+        if (description !== undefined) {
+            workspace.description = description;
+        }
+        await workspace.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Workspace updated successfully",
+            workspace
+        })
+
+    } catch (error) {
+        console.error("workspace update error:", error.message);
+        if (error.code === 11000) {
+            return res.status(409).json({
+                success: false,
+                message: "workspace slug already axists"
+            })
+        }
+        if (error.name === "ValidationError") {
+            return res.status(400).json({
+                success: false,
+                message: error.message
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message: "internal server error"
         })
     }
 
