@@ -43,3 +43,9 @@ export async function createWorkspace(req, res) {
     }
 
 }
+
+export async function getAllWorkspaces(req, res) {
+
+
+    
+}

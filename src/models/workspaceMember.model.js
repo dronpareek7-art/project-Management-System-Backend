@@ -1,12 +1,12 @@
 import mongoose from "mongoose";
 
 const workspaceMemberSchema = new mongoose.Schema({
-    workspace: {
+    workspaceId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "workspace",
         required: true
     },
-    user: {
+    userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "user",
         required: true

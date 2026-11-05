@@ -8,5 +8,6 @@ import { createWorkspace } from "../controllers/workspace.controller.js";
 const workspaceRouter = express.Router();
 
 workspaceRouter.post("/workspaces", verifyToken, workspaceValidationRules, validateFields, createWorkspace)
+workspaceRouter.get("/workspaces", verifyToken, getAllWorkspaces)
 
 export default workspaceRouter;
