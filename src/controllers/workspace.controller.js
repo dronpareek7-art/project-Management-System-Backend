@@ -9,8 +9,8 @@ export async function createWorkspace(req, res) {
         });
 
         await WorkSpaceMemberModel.create({
-            workspace: newWorkspace._id,
-            user: req.user.id,
+            workspaceId: newWorkspace._id,
+            userId: req.user.id,
             role: "admin"
 
         })
@@ -44,8 +44,45 @@ export async function createWorkspace(req, res) {
 
 }
 
+
 export async function getAllWorkspaces(req, res) {
+    try {
 
+        const userId = req.user.id;
 
-    
+        // Find all workspaces where logged-in user is a member
+        const memberships = await WorkSpaceMemberModel.find({
+            userId
+        })
+        .populate({
+            path: "workspaceId",
+            select: "title description owner slug createdAt updatedAt"
+        })
+        .sort({ joinedAt: -1 });
+
+        // Prepare workspace response
+        const workspaces = memberships
+            .filter(member => member.workspaceId !== null)
+            .map(member => ({
+                ...member.workspaceId.toObject(),
+                role: member.role,
+                joinedAt: member.joinedAt
+            }));
+
+        return res.status(200).json({
+            success: true,
+            message: "Workspaces fetched successfully",
+            totalWorkspaces: workspaces.length,
+            workspaces
+        });
+
+    } catch (error) {
+
+        console.error("Get workspaces error:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        });
+    }
 }

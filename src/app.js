@@ -8,7 +8,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use("/api/auth", authRouter);
-app.use("/api/create", workspaceRouter);
+app.use("/api/v1", workspaceRouter);
 
 
 export default app;
